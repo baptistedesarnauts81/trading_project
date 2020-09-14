@@ -5,34 +5,39 @@ stocks in order to make the maximum of money.
 """
 
 import time
-from bot import Bot
+from src.components.bot import Bot
 import argparse
-from utils import *
+from src.utils.time_utils import *
+from src.utils.json_utils import *
+import sys
 
 
 DEFAULT_STOCKS = ["MSFT", "ADP", "ATOS", "TSLA", "AAPL", "AIR", "OR"]
+DEFAULT_INITIAL_QUANTITY = 1
 DEFAULT_SIMULATION_TIME = 40
 DEFAULT_TIMELAPSE = 0.1
 DEFAULT_SIMULATION_DATE = "2020-01-01"
 DEFAULT_STRATEGY = "naive"
 # naive strategy parameters
 DEFAULT_LOWER = -2
-DEFAULT_UPPER = 2
+DEFAULT_UPPER = 5
 DEFAULT_MOVING_WINDOW = 30
-DEFAULT_DECREASE_WINDOW = 30
+DEFAULT_DECREASE_WINDOW = 3
 # commission
 DEFAULT_FIXED_COMMISSION = 3
 DEFAULT_PROP_COMISSION = 0.02
+# inital account amont
+DEFAULT_INITIAL_ACCOUNT = 3000
 
 
 def RunBot():
     # time initialisation
     t0 = date_to_timestamp(args.simulation_date)
     i = 0
-
+    print("Hi")
     # box initialisation
-    bot = Bot(args.stocks, timestamp_to_date(t0), args.simulation_time,
-              args.fixed_commission, args.prop_commission, args.moving_window, args.decrease_window, args.log)
+    bot = Bot(args.stocks, timestamp_to_date(t0), args.initial_quantity, args.simulation_time,
+              args.fixed_commission, args.prop_commission, args.moving_window, args.decrease_window, args.log, args.initial_account, args.lower, args.upper)
 
     # every timestep secondes
     while i < args.simulation_time:
@@ -42,6 +47,7 @@ def RunBot():
         bot.run(timestamp_to_date(t0),
                 args.strategy, args.log)
         time.sleep(args.timelapse)
+        # bot.store_state(timestamp_to_date(t0))
         i += 1
 
     bot.stock_state(timestamp_to_date(t0))
@@ -51,6 +57,7 @@ def RunBot():
     print("Montant initial : ", bot.initial_account)
     print("Montant final : ", bot.last_account)
     print("Total commissions : ", bot.total_commission)
+    print("Total transactions : ", bot.total_transaction)
 
 
 def main():
@@ -59,6 +66,8 @@ def main():
 
     parser.add_argument("--stocks", type=str, nargs="+",
                         default=DEFAULT_STOCKS)
+    parser.add_argument("--initial_quantity", type=int,
+                        default=DEFAULT_INITIAL_QUANTITY)
     parser.add_argument("--simulation_time", type=int,
                         default=DEFAULT_SIMULATION_TIME)
     parser.add_argument("--timelapse", type=float,
@@ -80,6 +89,8 @@ def main():
                         default=DEFAULT_FIXED_COMMISSION)
     parser.add_argument("--prop_commission", type=float,
                         default=DEFAULT_PROP_COMISSION)
+    parser.add_argument("--initial_account", type=float,
+                        default=DEFAULT_INITIAL_ACCOUNT)
 
     global args
 
